@@ -19,8 +19,8 @@ object EnrichedPlacePopuler extends Base {
   def main(args: Array[String]) {
 
     // First we are going to load the data we need, so the content of Hotel and Place tables
-    val hotelDF = toydb.loadFullTable("Hotel").where($"place_id" <= 210000)
-    val placeDF = toydb.loadFullTable("Place").where($"place_id" <= 210000)
+    val hotelDF = toydb.loadFullTable("Hotel")
+    val placeDF = toydb.loadFullTable("Place")
 
     // First we are going to create a dataframe, in which we have one line for every place id with all of their parents.
     // So if a place has 2 more levels in the navigation path, we will have 2 lines for this place id
@@ -111,7 +111,7 @@ object EnrichedPlacePopuler extends Base {
       .persist()
 
     unrepresentedDF.as("u")
-      .join(representedDF.as("r"),  distance($"u.latitude", $"u.longitude", $"r.latitude", $"r.longitude") <= 5)
+      .join(representedDF.as("r"),  distance($"u.latitude", $"u.longitude", $"r.latitude", $"r.longitude") <= 10)
       .select(
         $"u.place_id" as "unfilled_place_id",
         $"r.representative_nightly_price" as "filled_representative_nightly_price"

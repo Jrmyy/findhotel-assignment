@@ -11,7 +11,9 @@ libraryDependencies ++= {
     "mysql" % "mysql-connector-java" % "5.1.16",
     "com.databricks" %% "spark-redshift" % "3.0.0-preview1",
     "org.postgresql" % "postgresql" % "42.1.4",
-    "org.scalatest" %% "scalatest" % "3.0.4" % "test"
+    "org.scalatest" %% "scalatest" % "3.0.4" % "test",
+    "com.typesafe" % "config" % "1.3.1",
+    "org.xerial" % "sqlite-jdbc" % "3.21.0.1"
   )
 }
 

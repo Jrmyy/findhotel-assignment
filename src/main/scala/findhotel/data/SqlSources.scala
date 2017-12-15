@@ -7,11 +7,11 @@ object SqlSources extends Base {
   val toydb = DatabaseSource(
       name = "Toydb",
       engine = "mysql",
-      host = parseConfig("toydb.host"),
+      host = readConfig("toydb.host"),
       port = 3306,
-      database = "toydb",
-      user = parseConfig("toydb.user"),
-      password = parseConfig("toydb.password")
+      database = readConfig("toydb.database"),
+      user = readConfig("toydb.user"),
+      password = readConfig("toydb.password")
   )
 
 }

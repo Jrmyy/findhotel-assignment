@@ -13,10 +13,10 @@ object DataWarehouseTarget extends Base {
     val condition = primaryKeys.map(s => s"$tableName.$s = $tempTableName.$s") mkString " AND "
 
     if (session.conf.get("spark.is_local") != "true") {
-      val host = parseConfig("warehouse.host")
-      val database = parseConfig("warehouse.database")
-      val user = parseConfig("warehouse.user")
-      val password = parseConfig("warehouse.password")
+      val host = readConfig("warehouse.host")
+      val database = readConfig("warehouse.database")
+      val user = readConfig("warehouse.user")
+      val password = readConfig("warehouse.password")
       df.write
         .format("com.databricks.spark.redshift")
         .option("url", s"jdbc:redshift://$host/$database?user=$user&password=$password")
@@ -33,12 +33,12 @@ object DataWarehouseTarget extends Base {
         .mode("error")
         .save()
     } else {
-      val dbProperties = new Properties
-      dbProperties.setProperty("driver", "org.postgresql.Driver")
-      val jdbcUrl = s"jdbc:postgresql://localhost/findhotel"
-      df.write
+      df.write.format("jdbc")
+        .option("url", "jdbc:sqlite:findhotel.db")
+        .option("driver", "org.sqlite.JDBC")
+        .option("dbtable", tableName)
         .mode(SaveMode.Append)
-        .jdbc(jdbcUrl, tableName, dbProperties)
+        .save()
     }
 
   }

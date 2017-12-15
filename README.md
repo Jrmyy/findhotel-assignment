@@ -46,7 +46,7 @@ becomes
 3) We are going to create a new data frame `NeighboursDF`. It is built with the data frame we created just before, with the median calculation. First we split this data frame into 2 dataframes, one with `place_id` which have a `representative_nightly_price`, the other with places without this data. Then we attribute the `representative_nightly_price` of the `place_id` which satisfies 2 conditions:
 
 - This `place_id` has a non-null `representative_nightly_price`
-- This `place_id` is distant by less than 5 kms
+- This `place_id` is distant by less than 10 kms
 
 If we have more than one, we take the minimum of distance.
 
@@ -58,3 +58,12 @@ If we have more than one, we take the minimum of distance.
 2. We delete from the usual table all the rows for the `place_id` which are both in the usual and the temp table
 3. Then we insert the content of the temp table in the usual table
 4. We drop the temp table
+
+### Explaination
+
+### How to run it ?
+
+First you need:
+* Scala version 2.11.11
+* Apache Spark version 2.2
+* sbt 

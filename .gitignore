@@ -28,3 +28,4 @@ project/plugins/project/
 *.class
 *.log
 metastore_db
+findhotel.db
