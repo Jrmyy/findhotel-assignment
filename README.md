@@ -48,7 +48,7 @@ becomes
 - This `place_id` has a non-null `representative_nightly_price`
 - This `place_id` is distant by less than 10 kms
 
-If we have more than one, we take the minimum of distance.
+If we have more than one, we take the median of all the `representative_nightly_price`.
 
 4) Finally, we update the data frame `MedianEnrichedPlaceDF` by putting the value found with the `NeighboursDF`. This operation gives the final data frame `EnrichedPlace`, which will be put in the data warehouse.
 
@@ -59,7 +59,21 @@ If we have more than one, we take the minimum of distance.
 3. Then we insert the content of the temp table in the usual table
 4. We drop the temp table
 
-### Explaination
+**NB:** In local we won't do the upsert, but we will only store the data in a sqlite database.
+
+### Justification
+
+I think my solution offers a good compromise between accuracy et efficiency. In fact, by calculing the median of the hotels present in the place, we take the value that represents the most the night price for this place. By getting also all the hotels of the children places, we are just saying that an hotel in a place is also in all its parents. This was not done in the current `Hotel`table.
+
+One idea I had when trying to find the `representative_nightly_price` for the places without hotels, I thought about using the different attributes of each place (place type, place category, place group) and try to create a model to predict the representative nightly price. Nevertheless, I realized that the most important attribute when someone is looking for an hotel is where it is. We cannot compare an hotel in the historical area of Paris with an hotel in the historical area of Amsterdam, but we surely compare hotels in all Paris (or at least in a circle around a "perfect spot"). So I took 10 kilometers as the radius from the "perfect spot" and I applied this logic to say that places without known hotels have a price similar to the places near them (in less than 10 kilometers).
+
+I think these approachs are efficient because there rely on pragmatism, on facts, and not on a model with parameters for which it is hard to tell if there are really important.
+
+### Piece as part of a bigger ETL project
+
+Several alternatives can be offered in order to deploy it to AWS and to put it as a part of a bigger ETL pipeline. In fact, first, if you decide to keep the job as it is, you can put it in AWS ElasticMapReduce, which gives the advantage of scheduling the launch of Spark jobs. The drawback of this method is that it will be isolated of the rest of the pipeline. The other solution, the one I used when I was at Datadog, is to use a pipeline tool like Airflow or Luigi. You can add a new task for this Spark job, that will be triggered after the required tasks, before this one, are fullfilled.
+
+In order to monitor the pipeline, you can use the AWS CloudWatch or an external tool such as Datadog.
 
 ### How to run it ?
 
@@ -67,3 +81,13 @@ First you need:
 * Scala version 2.11.11
 * Apache Spark version 2.2
 * sbt 
+
+Then you just need to cd into the folder, and run these 2 commands:
+
+1. `sbt assembly`
+2. `spark-submit --class findhotel.compute.EnrichedPlacePopuler --master "local[4]" --conf spark.is_local=true target/scala-2.11/findhotel-assembly-0.1.jar`
+3. You can find the content of the `EnrichedPlace` in the sqlite database by typing `sqlite3 findhotel.db`
+
+### Limitations
+
+This job, on my local computer, takes more than one hour to complete for the full dataset. For 70% of the dataset, it takes about 40 minutes to fill in the `EnrichedPlace` table in data warehouse.
